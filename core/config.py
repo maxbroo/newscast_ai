@@ -11,6 +11,12 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "your_groq_api_key_here")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your_openai_api_key_here")
 
+# Debug logging for API keys (only show first few characters for security)
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"GROQ_API_KEY loaded: {GROQ_API_KEY[:10]}..." if GROQ_API_KEY != "your_groq_api_key_here" else "GROQ_API_KEY not set")
+logger.info(f"OPENAI_API_KEY loaded: {OPENAI_API_KEY[:10]}..." if OPENAI_API_KEY != "your_openai_api_key_here" else "OPENAI_API_KEY not set")
+
 # Twitter API credentials (optional)
 TWITTER_API_KEY = "your_twitter_api_key"
 TWITTER_API_SECRET = "your_twitter_api_secret"

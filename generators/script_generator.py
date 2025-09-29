@@ -101,7 +101,7 @@ Format as JSON:
                 {"role": "system", "content": "You are a professional podcast script writer for a news show. Create engaging, informative scripts that sound natural when read aloud."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             temperature=0.7
         )
         
