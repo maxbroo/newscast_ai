@@ -312,6 +312,22 @@ def health_check():
     """Health check endpoint for Railway"""
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
+@app.route('/api/test-keys')
+def test_api_keys():
+    """Test endpoint to check if API keys are working"""
+    from core.config import GROQ_API_KEY, OPENAI_API_KEY
+    
+    result = {
+        "groq_key_set": GROQ_API_KEY != "your_groq_api_key_here",
+        "groq_key_length": len(GROQ_API_KEY) if GROQ_API_KEY else 0,
+        "groq_key_preview": f"{GROQ_API_KEY[:10]}...{GROQ_API_KEY[-4:]}" if GROQ_API_KEY and GROQ_API_KEY != "your_groq_api_key_here" else "Not set",
+        "openai_key_set": OPENAI_API_KEY != "your_openai_api_key_here", 
+        "openai_key_length": len(OPENAI_API_KEY) if OPENAI_API_KEY else 0,
+        "openai_key_preview": f"{OPENAI_API_KEY[:10]}...{OPENAI_API_KEY[-4:]}" if OPENAI_API_KEY and OPENAI_API_KEY != "your_openai_api_key_here" else "Not set"
+    }
+    
+    return jsonify(result)
+
 if __name__ == '__main__':
     logger.info("Starting NewsCast AI Production Server...")
     logger.info("✓ Enhanced modular architecture loaded")

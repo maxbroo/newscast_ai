@@ -101,6 +101,14 @@ def generate_audio_segment(name: str, text: str, episode_folder: str) -> str:
     try:
         logger.info(f"Generating TTS for {name}: {text[:100]}...")
         
+        # Debug API key
+        if not OPENAI_API_KEY or OPENAI_API_KEY == "your_openai_api_key_here":
+            logger.error(f"OpenAI API key not set properly. Current value: {OPENAI_API_KEY[:10] if OPENAI_API_KEY else 'None'}...")
+            return None
+        
+        # Log API key info for debugging (first 10 chars only)
+        logger.debug(f"Using OpenAI API key: {OPENAI_API_KEY[:10]}...{OPENAI_API_KEY[-4:]} (length: {len(OPENAI_API_KEY)})")
+        
         client = OpenAI(api_key=OPENAI_API_KEY)
         
         response = client.audio.speech.create(
@@ -119,6 +127,8 @@ def generate_audio_segment(name: str, text: str, episode_folder: str) -> str:
         
     except Exception as e:
         logger.error(f"Error generating audio for {name}: {e}")
+        # Log more details about the API key for debugging
+        logger.error(f"API key details - Length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0}, Starts with: {OPENAI_API_KEY[:20] if OPENAI_API_KEY else 'None'}...")
         return None
 
 def combine_segment_audio(segment_folder: str, segment_number: int) -> str:

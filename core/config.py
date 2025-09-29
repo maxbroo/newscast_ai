@@ -5,17 +5,33 @@ Configuration settings for NewsCast AI
 # --- API Keys & Credentials ---
 import os
 from dotenv import load_dotenv
+import logging
 
+# Load environment variables
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "your_groq_api_key_here")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your_openai_api_key_here")
+# Get API keys with fallbacks and proper error handling
+def get_api_key(key_name, fallback=""):
+    """Safely get API key from environment"""
+    key = os.environ.get(key_name) or os.getenv(key_name, fallback)
+    if key and key != fallback:
+        return key.strip()  # Remove any whitespace
+    return fallback
 
-# Debug logging for API keys (only show first few characters for security)
-import logging
+GROQ_API_KEY = get_api_key("GROQ_API_KEY", "your_groq_api_key_here")
+OPENAI_API_KEY = get_api_key("OPENAI_API_KEY", "your_openai_api_key_here")
+
+# Debug logging for API keys (only show first and last few characters for security)
 logger = logging.getLogger(__name__)
-logger.info(f"GROQ_API_KEY loaded: {GROQ_API_KEY[:10]}..." if GROQ_API_KEY != "your_groq_api_key_here" else "GROQ_API_KEY not set")
-logger.info(f"OPENAI_API_KEY loaded: {OPENAI_API_KEY[:10]}..." if OPENAI_API_KEY != "your_openai_api_key_here" else "OPENAI_API_KEY not set")
+if GROQ_API_KEY != "your_groq_api_key_here":
+    logger.info(f"GROQ_API_KEY loaded: {GROQ_API_KEY[:10]}...{GROQ_API_KEY[-4:]} (length: {len(GROQ_API_KEY)})")
+else:
+    logger.warning("GROQ_API_KEY not set properly")
+
+if OPENAI_API_KEY != "your_openai_api_key_here":
+    logger.info(f"OPENAI_API_KEY loaded: {OPENAI_API_KEY[:10]}...{OPENAI_API_KEY[-4:]} (length: {len(OPENAI_API_KEY)})")
+else:
+    logger.warning("OPENAI_API_KEY not set properly")
 
 # Twitter API credentials (optional)
 TWITTER_API_KEY = "your_twitter_api_key"
