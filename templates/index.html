@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsCast AI - Neural News Network</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #151520;
+            --bg-card: rgba(20, 20, 35, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff006e;
+            --accent-gradient: linear-gradient(135deg, #00d4ff 0%, #ff006e 100%);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0px); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            position: relative;
+        }
+
+        .header h1 i {
+            color: var(--accent-primary);
+            margin-right: 16px;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .neural-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-glow), var(--shadow-card);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card h2 {
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card h2 i {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+        }
+
+        .player-section {
+            grid-column: 1 / -1;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin: 24px 0;
+            border-radius: 12px;
+            outline: none;
+            filter: invert(1) hue-rotate(180deg);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-player:hover {
+            opacity: 1;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .control-btn.stop:hover {
+            background: var(--accent-secondary);
+            box-shadow: 0 4px 20px rgba(255, 0, 110, 0.3);
+        }
+
+        .episode-list {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-secondary);
+        }
+
+        .episode-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .episode-list::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 3px;
+        }
+
+        .episode-list::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .episode-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin: 12px 0;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .episode-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-gradient);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .episode-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateX(4px);
+        }
+
+        .episode-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .episode-item.active {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .episode-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .episode-info h3 {
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .episode-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .episode-duration {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .episode-item.active .episode-duration {
+            color: var(--accent-primary);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .checkbox-item:hover {
+            background: var(--bg-glass);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .btn {
+            background: var(--accent-gradient);
+            color: var(--text-primary);
+            border: none;
+            padding: 18px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            margin-top: 24px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generation-status {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .status-text {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            color: var(--accent-secondary);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .success-message {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--accent-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .header {
+                padding: 20px 0;
+                margin-bottom: 24px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+            
+            .neural-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 16px;
+                margin: 24px 0;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .episode-list {
+                max-height: 300px;
+            }
+            
+            .episode-item {
+                padding: 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .episode-duration {
+                align-self: flex-end;
+            }
+            
+            .player-controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> NewsCast AI</h1>
+            <p>Neural News Network - AI-Powered Podcast Generation</p>
+            <div class="neural-subtitle">// Transforming information into intelligence</div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-episodes">0</div>
+                <div class="stat-label">Total Episodes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-duration">0</div>
+                <div class="stat-label">Hours of Content</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-updated">-</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card player-section">
+                <h2><i class="fas fa-play-circle"></i> Episode Player</h2>
+                <div id="player-container">
+                    <p>Select an episode to start playing</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Neural Archive</h2>
+                <div class="episode-list" id="episode-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Scanning neural pathways...
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-cog"></i> Generate New Episode</h2>
+                <form id="generation-form">
+                    <div class="form-group">
+                        <label for="politics">Political Stance</label>
+                        <select id="politics" name="politics">
+                            <option value="neutral">Neutral</option>
+                            <option value="conservative">Conservative</option>
+                            <option value="liberal">Liberal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scope">News Scope</label>
+                        <select id="scope" name="scope">
+                            <option value="global">Global</option>
+                            <option value="national">National</option>
+                            <option value="local">Local</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📰 Custom News Request (AI-Powered)</label>
+                        <textarea 
+                            id="custom-prompt" 
+                            name="custom-prompt" 
+                            placeholder="Describe what kind of news you want... e.g., 'Latest developments in renewable energy and climate tech', 'Financial markets and cryptocurrency updates', 'Space exploration and scientific breakthroughs'"
+                            style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary); resize: vertical; font-family: inherit;"
+                        ></textarea>
+                        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">
+                            🤖 AI will analyze your request and find relevant news automatically
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Or Choose Specific Topics</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="tech" name="topics" value="technology">
+                                <label for="tech">💻 Technology</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="business" name="topics" value="business">
+                                <label for="business">💼 Business</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="science" name="topics" value="science">
+                                <label for="science">🔬 Science</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="health" name="topics" value="health">
+                                <label for="health">🏥 Health</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sports" name="topics" value="sports">
+                                <label for="sports">⚽ Sports</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="entertainment" name="topics" value="entertainment">
+                                <label for="entertainment">🎬 Entertainment</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="environment" name="topics" value="environment">
+                                <label for="environment">🌍 Environment</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="finance" name="topics" value="finance">
+                                <label for="finance">💰 Finance</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="education" name="topics" value="education">
+                                <label for="education">📚 Education</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lifestyle" name="topics" value="lifestyle">
+                                <label for="lifestyle">✨ Lifestyle</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="automotive" name="topics" value="automotive">
+                                <label for="automotive">🚗 Automotive</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="travel" name="topics" value="travel">
+                                <label for="travel">✈️ Travel</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Episode Duration (minutes)</label>
+                        <input type="number" id="duration" name="duration" value="35" min="20" max="60">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="fast-mode" name="fast-mode" checked style="margin-right: 8px;">
+                            ⚡ Fast Mode (8 segments, optimized quality for speed)
+                        </label>
+                        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">
+                            Reduces generation time by ~60% with slightly lower audio quality
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn" id="generate-btn">
+                        <i class="fas fa-magic"></i> Generate Episode
+                    </button>
+                </form>
+
+                <div class="generation-status" id="generation-status">
+                    <div class="status-text" id="status-text">Preparing...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div id="progress-percent">0%</div>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+                <div class="success-message" id="success-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEpisode = null;
+        let currentAudio = null;
+        let episodes = [];
+
+        // Load episodes on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEpisodes();
+            setupEventListeners();
+            checkGenerationStatus();
+            createParticles();
+        });
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random positioning and timing
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                
+                // Random colors
+                const colors = ['#00d4ff', '#ff006e', '#ffffff'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('generation-form').addEventListener('submit', handleGeneration);
+        }
+
+        async function loadEpisodes() {
+            try {
+                const response = await fetch('/api/episodes');
+                const data = await response.json();
+                
+                if (data.success) {
+                    episodes = data.episodes;
+                    displayEpisodes();
+                    updateStats();
+                } else {
+                    showError('Failed to load episodes: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading episodes: ' + error.message);
+            }
+        }
+
+        function displayEpisodes() {
+            const episodeList = document.getElementById('episode-list');
+            
+            if (episodes.length === 0) {
+                episodeList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px; font-style: italic;">No neural patterns detected. Initialize your first episode!</p>';
+                return;
+            }
+
+            episodeList.innerHTML = episodes.map(episode => `
+                <div class="episode-item" data-episode="${episode.episode_number}" onclick="playEpisode(${episode.episode_number})">
+                    <div class="episode-info">
+                        <h3>${episode.title}</h3>
+                        <div class="episode-meta">
+                            ${episode.articles_count} articles • ${episode.file_size_mb} MB
+                            ${episode.categories.length > 0 ? '• ' + episode.categories.join(', ') : ''}
+                        </div>
+                    </div>
+                    <div class="episode-duration">${episode.duration_minutes} min</div>
+                </div>
+            `).join('');
+        }
+
+        function playEpisode(episodeNumber) {
+            const episode = episodes.find(ep => ep.episode_number === episodeNumber);
+            if (!episode) return;
+
+            // Update UI
+            document.querySelectorAll('.episode-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-episode="${episodeNumber}"]`).classList.add('active');
+
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+
+            // Create new audio element with better settings
+            currentAudio = new Audio();
+            currentAudio.src = episode.file_path;
+            currentAudio.preload = 'metadata';
+            currentAudio.crossOrigin = 'anonymous';
+            currentEpisode = episode;
+
+            // Add event listeners for better control
+            currentAudio.addEventListener('loadstart', () => {
+                console.log('Audio loading started');
+            });
+            
+            currentAudio.addEventListener('canplay', () => {
+                console.log('Audio can start playing');
+            });
+            
+            currentAudio.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                showError('Error loading audio: ' + e.message);
+            });
+
+            // Update player container
+            const playerContainer = document.getElementById('player-container');
+            playerContainer.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3>Now Playing: ${episode.title}</h3>
+                    <p>${episode.articles_count} articles • ${episode.duration_minutes} minutes</p>
+                </div>
+                <audio controls class="audio-player" preload="metadata" crossorigin="anonymous">
+                    <source src="${episode.file_path}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <div class="player-controls">
+                    <button onclick="togglePlayPause()" class="control-btn">
+                        <i class="fas fa-play" id="play-pause-icon"></i> <span id="play-pause-text">Play</span>
+                    </button>
+                    <button onclick="stopAudio()" class="control-btn stop">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                </div>
+            `;
+
+            // Get the audio element from the DOM
+            const audioElement = playerContainer.querySelector('audio');
+            if (audioElement) {
+                currentAudio = audioElement;
+                
+                // Add event listeners to the DOM audio element
+                currentAudio.addEventListener('play', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-pause';
+                    document.getElementById('play-pause-text').textContent = 'Pause';
+                });
+                
+                currentAudio.addEventListener('pause', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-play';
+                    document.getElementById('play-pause-text').textContent = 'Play';
+                });
+                
+                currentAudio.addEventListener('ended', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-play';
+                    document.getElementById('play-pause-text').textContent = 'Play';
+                });
+            }
+
+            // Auto-play
+            if (currentAudio) {
+                currentAudio.play().catch(e => {
+                    console.log('Autoplay prevented:', e);
+                    showError('Click play to start the episode (autoplay was blocked)');
+                });
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-episodes').textContent = episodes.length;
+            
+            const totalMinutes = episodes.reduce((sum, ep) => sum + ep.duration_minutes, 0);
+            const totalHours = (totalMinutes / 60).toFixed(1);
+            document.getElementById('total-duration').textContent = totalHours;
+            
+            if (episodes.length > 0) {
+                const lastEpisode = episodes[0]; // Episodes are sorted newest first
+                const date = new Date(lastEpisode.created_at);
+                document.getElementById('last-updated').textContent = date.toLocaleDateString();
+            }
+        }
+
+        async function handleGeneration(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const categories = {
+                politics: [formData.get('politics')],
+                scope: [formData.get('scope')],
+                topics: formData.getAll('topics')
+            };
+            
+            const duration = parseInt(formData.get('duration'));
+            const fastMode = formData.get('fast-mode') === 'on';
+            const customPrompt = formData.get('custom-prompt').trim();
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        politics: categories.politics,
+                        scope: categories.scope,
+                        topics: categories.topics,
+                        target_duration: duration,
+                        fast_mode: fastMode,
+                        custom_prompt: customPrompt
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    let message;
+                    if (customPrompt) {
+                        message = `🤖 AI analyzing your request: "${customPrompt.substring(0, 50)}..." - estimated completion: 3-5 minutes.`;
+                    } else {
+                        message = fastMode ? 
+                            '🚀 Neural synthesis initiated! Fast mode active - estimated completion: 3-5 minutes.' :
+                            '🧠 Neural synthesis initiated! Standard mode - estimated completion: 8-12 minutes.';
+                    }
+                    showSuccess(message);
+                    document.getElementById('generate-btn').disabled = true;
+                    document.getElementById('generation-status').style.display = 'block';
+                    startStatusPolling();
+                } else {
+                    showError('Neural synthesis failed: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error starting generation: ' + error.message);
+            }
+        }
+
+        function startStatusPolling() {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/generation-status');
+                    const status = await response.json();
+                    
+                    updateGenerationStatus(status);
+                    
+                    if (!status.is_generating) {
+                        clearInterval(interval);
+                        document.getElementById('generate-btn').disabled = false;
+                        
+                        if (status.error) {
+                            showError('Generation failed: ' + status.error);
+                        } else if (status.episode_number) {
+                            showSuccess(`Episode ${status.episode_number} generated successfully!`);
+                            loadEpisodes(); // Reload episodes
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                }
+            }, 2000);
+        }
+
+        function updateGenerationStatus(status) {
+            document.getElementById('status-text').textContent = status.current_step;
+            document.getElementById('progress-fill').style.width = status.progress + '%';
+            document.getElementById('progress-percent').textContent = status.progress + '%';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function checkGenerationStatus() {
+            try {
+                const response = await fetch('/api/generation-status');
+                const status = await response.json();
+                
+                if (status.is_generating) {
+                    document.getElementById('generate-btn').disabled = true;
+                    document.getElementById('generation-status').style.display = 'block';
+                    updateGenerationStatus(status);
+                    startStatusPolling();
+                }
+            } catch (error) {
+                console.error('Error checking initial status:', error);
+            }
+        }
+
+        function togglePlayPause() {
+            if (currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play().catch(e => {
+                        console.error('Play failed:', e);
+                        showError('Failed to play audio: ' + e.message);
+                    });
+                } else {
+                    currentAudio.pause();
+                }
+            }
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                document.getElementById('play-pause-icon').className = 'fas fa-play';
+                document.getElementById('play-pause-text').textContent = 'Play';
+            }
+        }
+    </script>
+</body>
+</html>

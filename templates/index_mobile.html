@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NewsCast AI - Neural News Network</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #151520;
+            --bg-card: rgba(20, 20, 35, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff006e;
+            --accent-gradient: linear-gradient(135deg, #00d4ff 0%, #ff006e 100%);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 24px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header h1 i {
+            color: var(--accent-primary);
+            margin-right: 12px;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .neural-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 4px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        .tab.active {
+            background: var(--accent-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .tab:not(.active) {
+            color: var(--text-secondary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+        }
+
+        .card h2 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h2 i {
+            color: var(--accent-primary);
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .episode-list {
+            max-height: 400px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .episode-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            margin: 8px 0;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .episode-item:active {
+            transform: scale(0.98);
+        }
+
+        .episode-item.active {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .episode-info h3 {
+            margin-bottom: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .episode-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .episode-duration {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin: 16px 0;
+            border-radius: 12px;
+            outline: none;
+            height: 40px;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .control-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .checkbox-item:active {
+            background: var(--bg-glass);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .btn {
+            background: var(--accent-gradient);
+            color: var(--text-primary);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generation-status {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .status-text {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .error-message,
+        .success-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            display: none;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            color: var(--accent-secondary);
+        }
+
+        .success-message {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--accent-primary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            margin-right: 12px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-secondary);
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .time-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .time-input input[type="time"] {
+            width: auto;
+            padding: 8px 12px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .form-group select,
+            .form-group input,
+            .form-group textarea {
+                font-size: 16px; /* Prevent zoom on focus */
+            }
+        }
+
+        /* Android Chrome specific fixes */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            .form-group select {
+                background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+                background-size: 12px;
+                padding-right: 32px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                min-width: 60px;
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> NewsCast AI</h1>
+            <p>Neural News Network</p>
+            <div class="neural-subtitle">// iPhone-Optimized AI Podcasts</div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-episodes">0</div>
+                <div class="stat-label">Episodes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-duration">0</div>
+                <div class="stat-label">Hours</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-updated">-</div>
+                <div class="stat-label">Last</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('player')">
+                <i class="fas fa-play"></i> Player
+            </div>
+            <div class="tab" onclick="showTab('episodes')">
+                <i class="fas fa-list"></i> Episodes
+            </div>
+            <div class="tab" onclick="showTab('generate')">
+                <i class="fas fa-plus"></i> Generate
+            </div>
+            <div class="tab" onclick="showTab('schedule')">
+                <i class="fas fa-clock"></i> Schedule
+            </div>
+        </div>
+
+        <!-- Player Tab -->
+        <div id="player-tab" class="tab-content active">
+            <div class="card">
+                <h2><i class="fas fa-play-circle"></i> Episode Player</h2>
+                <div id="player-container">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                        Select an episode to start playing
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Episodes Tab -->
+        <div id="episodes-tab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Neural Archive</h2>
+                <div class="episode-list" id="episode-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Scanning neural pathways...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Tab -->
+        <div id="generate-tab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-cog"></i> Generate New Episode</h2>
+                <form id="generation-form">
+                    <div class="form-group">
+                        <label for="politics">Political Stance</label>
+                        <select id="politics" name="politics">
+                            <option value="neutral">Neutral</option>
+                            <option value="conservative">Conservative</option>
+                            <option value="liberal">Liberal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scope">News Scope</label>
+                        <select id="scope" name="scope">
+                            <option value="global">Global</option>
+                            <option value="national">National</option>
+                            <option value="local">Local</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="custom-prompt">🤖 Custom News Request</label>
+                        <textarea 
+                            id="custom-prompt" 
+                            name="custom-prompt" 
+                            placeholder="e.g., 'Latest tech news and market updates'"
+                            rows="3"
+                        ></textarea>
+                        <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">
+                            AI will find relevant news automatically
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Or Choose Specific Topics</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="tech" name="topics" value="technology">
+                                <label for="tech">💻 Tech</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="business" name="topics" value="business">
+                                <label for="business">💼 Business</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="science" name="topics" value="science">
+                                <label for="science">🔬 Science</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="health" name="topics" value="health">
+                                <label for="health">🏥 Health</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sports" name="topics" value="sports">
+                                <label for="sports">⚽ Sports</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="finance" name="topics" value="finance">
+                                <label for="finance">💰 Finance</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Duration (minutes)</label>
+                        <input type="number" id="duration" name="duration" value="35" min="20" max="60">
+                    </div>
+
+                    <button type="submit" class="btn" id="generate-btn">
+                        <i class="fas fa-magic"></i> Generate Episode
+                    </button>
+                </form>
+
+                <div class="generation-status" id="generation-status">
+                    <div class="status-text" id="status-text">Preparing...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div id="progress-percent" style="text-align: center; font-size: 0.8rem; color: var(--text-secondary);">0%</div>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+                <div class="success-message" id="success-message"></div>
+            </div>
+        </div>
+
+        <!-- Schedule Tab -->
+        <div id="schedule-tab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-clock"></i> Morning Generation</h2>
+                
+                <div class="form-group" style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="morning-enabled">
+                        <span class="slider"></span>
+                    </label>
+                    <label for="morning-enabled" style="margin: 0; font-weight: 500;">
+                        Enable automatic morning episodes
+                    </label>
+                </div>
+                
+                <div id="morning-settings" style="display: none;">
+                    <div class="form-group">
+                        <label>Generation Time</label>
+                        <div class="time-input">
+                            <input type="time" id="morning-time" value="07:00">
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">24-hour format</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="morning-politics">Political Stance</label>
+                        <select id="morning-politics" name="morning-politics">
+                            <option value="neutral">Neutral</option>
+                            <option value="conservative">Conservative</option>
+                            <option value="liberal">Liberal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="morning-scope">News Scope</label>
+                        <select id="morning-scope" name="morning-scope">
+                            <option value="global">Global</option>
+                            <option value="national">National</option>
+                            <option value="local">Local</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Morning Topics</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="morning-tech" name="morning-topics" value="technology" checked>
+                                <label for="morning-tech">💻 Tech</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="morning-business" name="morning-topics" value="business" checked>
+                                <label for="morning-business">💼 Business</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="morning-science" name="morning-topics" value="science">
+                                <label for="morning-science">🔬 Science</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="morning-health" name="morning-topics" value="health">
+                                <label for="morning-health">🏥 Health</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="morning-duration">Duration (minutes)</label>
+                        <input type="number" id="morning-duration" name="morning-duration" value="35" min="20" max="60">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="morning-prompt">Custom Morning Prompt (Optional)</label>
+                        <textarea 
+                            id="morning-prompt" 
+                            name="morning-prompt" 
+                            placeholder="e.g., 'Latest tech and market updates for the morning'"
+                            rows="3"
+                        ></textarea>
+                    </div>
+
+                    <button type="button" class="btn" id="save-preferences">
+                        <i class="fas fa-save"></i> Save Morning Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEpisode = null;
+        let currentAudio = null;
+        let episodes = [];
+        let currentTab = 'player';
+
+        // Load episodes and preferences on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEpisodes();
+            loadPreferences();
+            setupEventListeners();
+            checkGenerationStatus();
+        });
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('generation-form').addEventListener('submit', handleGeneration);
+            
+            // Toggle morning settings visibility
+            document.getElementById('morning-enabled').addEventListener('change', function() {
+                const settings = document.getElementById('morning-settings');
+                settings.style.display = this.checked ? 'block' : 'none';
+            });
+            
+            // Save preferences button
+            document.getElementById('save-preferences').addEventListener('click', savePreferences);
+        }
+
+        async function loadEpisodes() {
+            try {
+                const response = await fetch('/api/episodes');
+                const data = await response.json();
+                
+                if (data.success) {
+                    episodes = data.episodes;
+                    displayEpisodes();
+                    updateStats();
+                } else {
+                    showError('Failed to load episodes: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading episodes: ' + error.message);
+            }
+        }
+
+        function displayEpisodes() {
+            const episodeList = document.getElementById('episode-list');
+            
+            if (episodes.length === 0) {
+                episodeList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px; font-style: italic;">No episodes found. Generate your first episode!</p>';
+                return;
+            }
+
+            episodeList.innerHTML = episodes.map(episode => `
+                <div class="episode-item" data-episode="${episode.episode_number}" onclick="playEpisode(${episode.episode_number})">
+                    <div class="episode-info">
+                        <h3>${episode.title}</h3>
+                        <div class="episode-meta">
+                            ${episode.articles_count} articles • ${episode.file_size_mb} MB
+                        </div>
+                    </div>
+                    <div class="episode-duration">${episode.duration_minutes}m</div>
+                </div>
+            `).join('');
+        }
+
+        function playEpisode(episodeNumber) {
+            const episode = episodes.find(ep => ep.episode_number === episodeNumber);
+            if (!episode) return;
+
+            // Update UI
+            document.querySelectorAll('.episode-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-episode="${episodeNumber}"]`).classList.add('active');
+
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+
+            currentEpisode = episode;
+
+            // Update player container
+            const playerContainer = document.getElementById('player-container');
+            playerContainer.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <h3>Now Playing: ${episode.title}</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">${episode.articles_count} articles • ${episode.duration_minutes} minutes</p>
+                </div>
+                <audio controls class="audio-player" preload="metadata">
+                    <source src="${episode.file_path}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <div class="player-controls">
+                    <button onclick="togglePlayPause()" class="control-btn">
+                        <i class="fas fa-play" id="play-pause-icon"></i> <span id="play-pause-text">Play</span>
+                    </button>
+                    <button onclick="stopAudio()" class="control-btn">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                </div>
+            `;
+
+            // Get the audio element and set up event listeners
+            currentAudio = playerContainer.querySelector('audio');
+            if (currentAudio) {
+                currentAudio.addEventListener('play', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-pause';
+                    document.getElementById('play-pause-text').textContent = 'Pause';
+                });
+                
+                currentAudio.addEventListener('pause', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-play';
+                    document.getElementById('play-pause-text').textContent = 'Play';
+                });
+                
+                currentAudio.addEventListener('ended', () => {
+                    document.getElementById('play-pause-icon').className = 'fas fa-play';
+                    document.getElementById('play-pause-text').textContent = 'Play';
+                });
+            }
+
+            // Switch to player tab
+            showTab('player');
+        }
+
+        function updateStats() {
+            document.getElementById('total-episodes').textContent = episodes.length;
+            
+            const totalMinutes = episodes.reduce((sum, ep) => sum + ep.duration_minutes, 0);
+            const totalHours = (totalMinutes / 60).toFixed(1);
+            document.getElementById('total-duration').textContent = totalHours;
+            
+            if (episodes.length > 0) {
+                const lastEpisode = episodes[0];
+                const date = new Date(lastEpisode.created_at);
+                document.getElementById('last-updated').textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
+
+        async function handleGeneration(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const categories = {
+                politics: [formData.get('politics')],
+                scope: [formData.get('scope')],
+                topics: formData.getAll('topics')
+            };
+            
+            const duration = parseInt(formData.get('duration'));
+            const customPrompt = formData.get('custom-prompt').trim();
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        politics: categories.politics,
+                        scope: categories.scope,
+                        topics: categories.topics,
+                        target_duration: duration,
+                        custom_prompt: customPrompt
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const message = customPrompt ? 
+                        `🤖 AI analyzing your request - estimated completion: 3-5 minutes.` :
+                        '🚀 Neural synthesis initiated! Estimated completion: 3-5 minutes.';
+                    
+                    showSuccess(message);
+                    document.getElementById('generate-btn').disabled = true;
+                    document.getElementById('generation-status').style.display = 'block';
+                    startStatusPolling();
+                } else {
+                    showError('Neural synthesis failed: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error starting generation: ' + error.message);
+            }
+        }
+
+        function startStatusPolling() {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/generation-status');
+                    const status = await response.json();
+                    
+                    updateGenerationStatus(status);
+                    
+                    if (!status.is_generating) {
+                        clearInterval(interval);
+                        document.getElementById('generate-btn').disabled = false;
+                        
+                        if (status.error) {
+                            showError('Generation failed: ' + status.error);
+                        } else if (status.episode_number) {
+                            showSuccess(`Episode ${status.episode_number} generated successfully!`);
+                            loadEpisodes(); // Reload episodes
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                }
+            }, 2000);
+        }
+
+        function updateGenerationStatus(status) {
+            document.getElementById('status-text').textContent = status.current_step;
+            document.getElementById('progress-fill').style.width = status.progress + '%';
+            document.getElementById('progress-percent').textContent = status.progress + '%';
+        }
+
+        async function loadPreferences() {
+            try {
+                const response = await fetch('/api/preferences');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const prefs = data.preferences.morning_generation;
+                    
+                    document.getElementById('morning-enabled').checked = prefs.enabled;
+                    document.getElementById('morning-time').value = prefs.time;
+                    document.getElementById('morning-politics').value = prefs.politics[0];
+                    document.getElementById('morning-scope').value = prefs.scope[0];
+                    document.getElementById('morning-duration').value = prefs.duration;
+                    document.getElementById('morning-prompt').value = prefs.custom_prompt || '';
+                    
+                    // Check topic checkboxes
+                    prefs.topics.forEach(topic => {
+                        const checkbox = document.getElementById(`morning-${topic}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    
+                    // Show/hide settings based on enabled state
+                    document.getElementById('morning-settings').style.display = prefs.enabled ? 'block' : 'none';
+                }
+            } catch (error) {
+                console.error('Error loading preferences:', error);
+            }
+        }
+
+        async function savePreferences() {
+            const enabled = document.getElementById('morning-enabled').checked;
+            const time = document.getElementById('morning-time').value;
+            const politics = [document.getElementById('morning-politics').value];
+            const scope = [document.getElementById('morning-scope').value];
+            const duration = parseInt(document.getElementById('morning-duration').value);
+            const customPrompt = document.getElementById('morning-prompt').value;
+            
+            const topics = Array.from(document.querySelectorAll('input[name="morning-topics"]:checked'))
+                .map(cb => cb.value);
+            
+            const preferences = {
+                morning_generation: {
+                    enabled,
+                    time,
+                    politics,
+                    scope,
+                    topics,
+                    duration,
+                    custom_prompt: customPrompt
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(preferences)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Morning settings saved successfully!');
+                } else {
+                    showError('Failed to save settings: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error saving settings: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function checkGenerationStatus() {
+            try {
+                const response = await fetch('/api/generation-status');
+                const status = await response.json();
+                
+                if (status.is_generating) {
+                    document.getElementById('generate-btn').disabled = true;
+                    document.getElementById('generation-status').style.display = 'block';
+                    updateGenerationStatus(status);
+                    startStatusPolling();
+                }
+            } catch (error) {
+                console.error('Error checking initial status:', error);
+            }
+        }
+
+        function togglePlayPause() {
+            if (currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play().catch(e => {
+                        console.error('Play failed:', e);
+                        showError('Failed to play audio: ' + e.message);
+                    });
+                } else {
+                    currentAudio.pause();
+                }
+            }
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                document.getElementById('play-pause-icon').className = 'fas fa-play';
+                document.getElementById('play-pause-text').textContent = 'Play';
+            }
+        }
+    </script>
+</body>
+</html>

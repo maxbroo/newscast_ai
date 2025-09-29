@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "gunicorn --bind 0.0.0.0:$PORT --timeout 300 --workers 2 web_app_production:app"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+
+[environments.production.variables]
+FLASK_ENV = "production"
+PYTHONPATH = "/app"
